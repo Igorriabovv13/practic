@@ -1,0 +1,66 @@
+# views.py
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Product, CartItem
+import json
+
+@csrf_exempt
+def create_product(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        product = Product.objects.create(
+            name=data['name'],
+            description=data['description'],
+            price=data['price'],
+            image_url=data['image_url']
+        )
+        return JsonResponse({'status': 'success', 'product_id': product.id}, status=201)
+
+@csrf_exempt
+def get_products(request):
+    if request.method == 'GET':
+        products = Product.objects.all().values()
+        return JsonResponse({'products': list(products)}, status=200)
+
+@csrf_exempt
+def add_to_cart(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        cart_item = CartItem.objects.create(
+            user_id=data['user_id'],
+            product_id=data['product_id'],
+            quantity=data['quantity']
+        )
+        return JsonResponse({'status': 'success', 'cart_item_id': cart_item.id}, status=201)
+
+@csrf_exempt
+def get_cart(request, user_id):
+    if request.method == 'GET':
+        cart_items = CartItem.objects.filter(user_id=user_id).values()
+        return JsonResponse({'cart_items': list(cart_items)}, status=200)
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "багет",
+      "price": 30,
+      "image_url": "https://example.com/images/croissant.jpg"
+    },
+    {
+      "id": 2,
+      "name": "эчпочмак",
+      "price": 70,
+      "image_url": "https://example.com/images/cherry_pie.jpg"
+    }
+  ]
+}
+{
+  "name": "эклеры",
+  "price": 50,
+  "image_url": "https://example.com/images/rye_bread.jpg"
+}
+{
+  "user_id": 1,
+  "product_id": 2,
+  "quantity": 3
+}
